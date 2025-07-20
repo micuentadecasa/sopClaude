@@ -1,0 +1,7 @@
+# Interactive Claude SOP Generator
+# No Python dependencies required!
+
+# This version uses Claude Code CLI in interactive mode
+# Install Claude Code with: npm install -g @anthropic-ai/claude-code
+
+# That's it! No other dependencies needed.

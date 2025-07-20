@@ -1,0 +1,43 @@
+# Output files
+output/
+
+# Session files
+.interactive-session
+
+# Temporary files
+.temp-prompt.md
+*.tmp
+*.temp
+tmp/
+
+# Environment files
+.env
+.env.local
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Editor files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Logs
+*.log
+
+# Node modules (if any future JS dependencies)
+node_modules/
+
+# Python cache (cleanup from old version)
+__pycache__/
+*.py[cod]
+*.pyo
+.pytest_cache/
+
+# Build artifacts
+dist/
+build/
+*.egg-info/
