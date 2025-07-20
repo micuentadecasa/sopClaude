@@ -1,0 +1,99 @@
+#!/bin/bash
+
+# claude-clear - Clear all outputs to start fresh
+
+echo "🧹 Claude SOP Generator - Clear Outputs"
+echo "====================================="
+echo ""
+
+# Check if output directory exists
+if [ ! -d "output" ]; then
+    echo "✅ Output directory doesn't exist - nothing to clear"
+    exit 0
+fi
+
+# Check what exists to clear
+FOUND_OUTPUTS=false
+if [ -d "output/stage1-define" ]; then
+    FOUND_OUTPUTS=true
+    echo "📁 Found Stage 1 outputs"
+fi
+if [ -d "output/stage2-design" ]; then
+    FOUND_OUTPUTS=true
+    echo "📁 Found Stage 2 outputs"
+fi
+if [ -d "output/stage3-build" ]; then
+    FOUND_OUTPUTS=true
+    echo "📁 Found Stage 3 outputs"
+fi
+if [ -f "output/overall-review.md" ]; then
+    FOUND_OUTPUTS=true
+    echo "📄 Found overall review"
+fi
+
+if [ "$FOUND_OUTPUTS" = false ]; then
+    echo "✅ No outputs found - nothing to clear"
+    exit 0
+fi
+
+echo ""
+echo "⚠️  WARNING: This will delete all generated outputs!"
+echo "   You will lose all SOPs, prompts, and implementation files."
+echo ""
+read -p "Are you sure you want to continue? (yes/no): " confirmation
+
+if [ "$confirmation" != "yes" ]; then
+    echo ""
+    echo "❌ Clear operation cancelled"
+    exit 0
+fi
+
+echo ""
+echo "🗑️  Clearing outputs..."
+
+# Remove all stage outputs
+if [ -d "output/stage1-define" ]; then
+    rm -rf output/stage1-define
+    echo "✅ Cleared Stage 1 outputs"
+fi
+
+if [ -d "output/stage2-design" ]; then
+    rm -rf output/stage2-design
+    echo "✅ Cleared Stage 2 outputs"
+fi
+
+if [ -d "output/stage3-build" ]; then
+    rm -rf output/stage3-build
+    echo "✅ Cleared Stage 3 outputs"
+fi
+
+if [ -f "output/overall-review.md" ]; then
+    rm -f output/overall-review.md
+    echo "✅ Cleared overall review"
+fi
+
+# Check if output directory is empty and remove if so
+if [ -z "$(ls -A output 2>/dev/null)" ]; then
+    rmdir output
+fi
+
+echo ""
+echo "✨ All outputs cleared successfully!"
+echo ""
+echo "You can now start fresh with a new use case:"
+echo "1. Create or update input/use-case.md"
+echo "2. Run ./claude-define to begin"
+echo ""
+
+# Optional: Ask if they want to clear the input as well
+if [ -f "input/use-case.md" ]; then
+    echo "💡 Tip: Your current use case is still in input/use-case.md"
+    read -p "   Would you like to clear the input file too? (yes/no): " clear_input
+    
+    if [ "$clear_input" = "yes" ]; then
+        rm -f input/use-case.md
+        echo "✅ Input file cleared"
+        echo ""
+        echo "📝 Create a new input/use-case.md to get started"
+    fi
+fi

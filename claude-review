@@ -1,0 +1,158 @@
+#!/bin/bash
+
+# claude-review - Run quality review on any completed stage
+
+echo "🔍 Claude SOP Generator - Quality Review"
+echo "======================================"
+
+# Detect which stages have been completed
+STAGES_COMPLETED=""
+
+if [ -f "output/stage1-define/.tracking.json" ]; then
+    STAGES_COMPLETED="${STAGES_COMPLETED}1"
+fi
+
+if [ -f "output/stage2-design/.tracking.json" ]; then
+    STAGES_COMPLETED="${STAGES_COMPLETED}2"
+fi
+
+if [ -f "output/stage3-build/.tracking.json" ]; then
+    STAGES_COMPLETED="${STAGES_COMPLETED}3"
+fi
+
+if [ -z "$STAGES_COMPLETED" ]; then
+    echo "❌ No completed stages found"
+    echo "   Please run at least one stage before reviewing"
+    exit 1
+fi
+
+echo "📊 Found completed stages: $STAGES_COMPLETED"
+echo ""
+
+# Review Stage 1 if completed
+if [[ $STAGES_COMPLETED == *"1"* ]]; then
+    echo "📝 Reviewing Stage 1: Define"
+    echo "----------------------------"
+    
+    if [ -f "output/stage1-define/review/stage1-review.md" ]; then
+        echo "✅ Stage 1 review already exists"
+        echo "   Location: output/stage1-define/review/stage1-review.md"
+    else
+        echo "⚠️  Stage 1 review not found - regenerating..."
+        mkdir -p output/stage1-define/review
+        claude --no-interactive \
+          --prompt "$(cat prompts/define-review-prompt.md)" \
+          --context output/stage1-define/agent-scope.md \
+          --context output/stage1-define/scenarios/all-scenarios.md \
+          > output/stage1-define/review/stage1-review.md
+        echo "✅ Stage 1 review regenerated"
+    fi
+    
+    # Display summary
+    echo ""
+    echo "Stage 1 Summary:"
+    claude --no-interactive \
+      --prompt "Provide a brief 3-line summary of the review findings. Focus on: 1) Overall status (PASS/FAIL/WARNINGS), 2) Key strengths, 3) Main issues if any." \
+      --context output/stage1-define/review/stage1-review.md
+    echo ""
+fi
+
+# Review Stage 2 if completed
+if [[ $STAGES_COMPLETED == *"2"* ]]; then
+    echo "📝 Reviewing Stage 2: Design"
+    echo "----------------------------"
+    
+    if [ -f "output/stage2-design/review/stage2-review.md" ]; then
+        echo "✅ Stage 2 review already exists"
+        echo "   Location: output/stage2-design/review/stage2-review.md"
+    else
+        echo "⚠️  Stage 2 review not found - regenerating..."
+        mkdir -p output/stage2-design/review
+        claude --no-interactive \
+          --prompt "$(cat prompts/design-review-prompt.md)" \
+          --context output/stage2-design/sop/main-workflow.md \
+          --context output/stage2-design/sop/decision-trees.md \
+          --context output/stage2-design/sop/error-handling.md \
+          --context output/stage2-design/integrations.md \
+          > output/stage2-design/review/stage2-review.md
+        echo "✅ Stage 2 review regenerated"
+    fi
+    
+    # Display summary
+    echo ""
+    echo "Stage 2 Summary:"
+    claude --no-interactive \
+      --prompt "Provide a brief 3-line summary of the review findings. Focus on: 1) Overall status (PASS/FAIL/WARNINGS), 2) Key strengths, 3) Main issues if any." \
+      --context output/stage2-design/review/stage2-review.md
+    echo ""
+fi
+
+# Review Stage 3 if completed
+if [[ $STAGES_COMPLETED == *"3"* ]]; then
+    echo "📝 Reviewing Stage 3: Build"
+    echo "---------------------------"
+    
+    if [ -f "output/stage3-build/review/stage3-review.md" ]; then
+        echo "✅ Stage 3 review already exists"
+        echo "   Location: output/stage3-build/review/stage3-review.md"
+    else
+        echo "⚠️  Stage 3 review not found - regenerating..."
+        mkdir -p output/stage3-build/review
+        claude --no-interactive \
+          --prompt "$(cat prompts/build-review-prompt.md)" \
+          --context output/stage3-build/architecture/system-design.md \
+          --context output/stage3-build/prompts/system-prompt.md \
+          --context output/stage3-build/implementation/agent-core.py \
+          --context output/stage3-build/tests/test-suite.py \
+          > output/stage3-build/review/stage3-review.md
+        echo "✅ Stage 3 review regenerated"
+    fi
+    
+    # Display summary
+    echo ""
+    echo "Stage 3 Summary:"
+    claude --no-interactive \
+      --prompt "Provide a brief 3-line summary of the review findings. Focus on: 1) Overall status (PASS/FAIL/WARNINGS), 2) Key strengths, 3) Main issues if any." \
+      --context output/stage3-build/review/stage3-review.md
+    echo ""
+fi
+
+# Generate overall project review
+echo "📊 Overall Project Review"
+echo "========================"
+
+# Collect all review files
+REVIEW_FILES=""
+if [ -f "output/stage1-define/review/stage1-review.md" ]; then
+    REVIEW_FILES="${REVIEW_FILES} output/stage1-define/review/stage1-review.md"
+fi
+if [ -f "output/stage2-design/review/stage2-review.md" ]; then
+    REVIEW_FILES="${REVIEW_FILES} output/stage2-design/review/stage2-review.md"
+fi
+if [ -f "output/stage3-build/review/stage3-review.md" ]; then
+    REVIEW_FILES="${REVIEW_FILES} output/stage3-build/review/stage3-review.md"
+fi
+
+if [ -n "$REVIEW_FILES" ]; then
+    echo ""
+    echo "Generating consolidated review..."
+    claude --no-interactive \
+      --prompt "Based on all stage reviews, provide an overall project assessment. Include: 1) Overall readiness status, 2) Cross-stage consistency check, 3) Top 3 recommendations for improvement, 4) Next steps." \
+      --context $REVIEW_FILES \
+      > output/overall-review.md
+    
+    echo ""
+    echo "✨ Review complete!"
+    echo ""
+    echo "📁 Review files:"
+    for stage in 1 2 3; do
+        if [[ $STAGES_COMPLETED == *"$stage"* ]]; then
+            case $stage in
+                1) echo "   - output/stage1-define/review/stage1-review.md" ;;
+                2) echo "   - output/stage2-design/review/stage2-review.md" ;;
+                3) echo "   - output/stage3-build/review/stage3-review.md" ;;
+            esac
+        fi
+    done
+    echo "   - output/overall-review.md"
+fi
