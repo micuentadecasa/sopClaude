@@ -1,0 +1,9 @@
+ change the input/use-case.md content for one solution that analyzes   │
+│   multiple types of documents for electrical installations of medium    │
+│   and low tension, it should validate the budgets included on all the   │
+│   documents, so they fit, and all the technical details, if it says     │
+│   one support in one document it cannot say two supports in another     │
+│   document, unless it detects that it is one of the two by some code.   │
+│   ultrathink about what kind of validations do we need and what kind    │
+│   of fields do we need to extract from the documents to do the          │
+│   validations   
